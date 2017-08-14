@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Oranges - Register</title>
+
+    <style>
+        .button {
+            background-color: darkorange;
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border: .5px solid #010101;
+            letter-spacing: 1.2px;
+        }
+    </style>
+
+</head>
+<body style="font-family: Impact, Charcoal, sans-serif">
+<div style="letter-spacing: 1.2px">
+<h1 style="color: darkorange;background-color: black;display:inline-block;">Register Yourself to the Fest!</h1><br>
+
+Username: <input id="username" placeholder="User Name" required/>
+<br><br>
+
+Password: <input type="password" id="password" placeholder="password" required/>
+<button class = button id="rgstnBtn">Register</button>
+<br><br>
+<br>
+to login, please:<a href="http://localhost:8080/login">Login</a>
+    </div>
+</body>
+
+<script>
+    $("#rgstnBtn").click(function () {
+        var password = $("#password").val();
+        var username = $("#username").val();
+        if(username && password) {
+            $.post("/register/" + username + "/" + password, function (data) {
+                var status = data;
+                if (status === '500') {
+                    alert("invalid username or password")
+                } else {
+                    alert("welcome");
+                    window.parent.location = "http://localhost:8080/item";
+                }
+
+            });
+        }else{
+            alert('please insert valid user name and password')
+        }
+    })
+</script>
+</html>

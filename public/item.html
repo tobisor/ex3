@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Oranges - Options</title>
+    <style>
+        table {
+        width:50%;
+        }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 5px;
+            text-align: left;
+
+        }
+
+        table tr:nth-child(even) {
+            background-color: rgba(255, 165, 0, 0.56);
+        }
+        table tr:nth-child(odd) {
+            background-color:#fff;
+        }
+        table th {
+            background-color: black;
+            color: white;
+            text-align: center;
+        }
+
+    </style>
+
+    <style>
+        .button {
+            background-color: darkorange;
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border: .5px solid black;
+            font-family: Impact, Charcoal, sans-serif;
+            letter-spacing: 1.2px;
+        }
+    </style>
+</head>
+<body style="font-family: Impact, Charcoal, sans-serif" >
+<div style="letter-spacing: 1.2px">
+<h1 style="color: darkorange;background-color: black;display:inline-block;">Orange Fest Inventory</h1><br>
+
+<form>
+    <div style="font-weight: bold">If you want to delete an orange, please enter it's id.<br></div>
+<input type="deleteid" id="deleteid" placeholder="id number" required/>
+<button class = button id="dltBtn" type = 'button'>DELETE!</button>
+<br>
+    <div style="font-weight: bold">If you want to get an orange, please enter it's id.<br></div>
+<input type="getid" id="getid" placeholder="id number" required/>
+<button class = button id="getBtn" type = 'button'>GET!</button>
+<br>
+    <div style="font-weight: bold">If you want to add or edit a new orange, please enter details:<br></div>
+
+ <input type="postid" id="postid" placeholder="id number" required/><br>
+ <input type="postsize" id="postsize" placeholder="size" /><br>
+ <input type="postprice" id="postprice" placeholder="price"/><br>
+ <input type="postdata" id="postdata" placeholder="else"/><br>
+<button class = button id="postBtn" type = 'button'>ADD!</button><button class = button id="putBtn" type = 'button'>EDIT!</button>
+<br>
+
+<div id = "tableDiv" style=" ">
+    <button class = button id="listBtn" type = 'button'>Get Oranges List</button><br>
+    <table id = "itemTable"></table>
+</div>
+</form>
+to login, please:<a href="http://localhost:8080/login">Login</a>
+</div>
+</body>
+
+<script>
+
+    $("#putBtn").click(function () {
+
+        console.log("PUT")
+        var obj = new Object()
+        obj.id = $("#postid").val();
+        obj.size = $("#postsize").val();
+        obj.price = $("#postprice").val();
+        obj.data = $("#postdata").val();
+        var urlString =JSON.stringify(obj);
+        console.log(urlString);
+        if (obj.id){
+            putItem(urlString);
+        }else{
+            alert('insert vaild id');
+        }
+    });
+
+
+    $("#postBtn").click(function () {
+        var obj = new Object()
+        obj.id = $("#postid").val();
+        obj.size = $("#postsize").val();
+        obj.price = $("#postprice").val();
+        obj.data = $("#postdata").val();
+        var urlString =JSON.stringify(obj);
+        console.log(urlString)
+        if (obj.id) {
+            $.post("/item/" ,urlString, function (data) {
+                console.log(data)
+                if (data === "500") {
+                    window.parent.location = "http://localhost:8080/login";
+                } else if (data === '404') {
+                    alert("item not found")
+                } else {
+                    alert("list edit has completed successfully")
+                }
+            });
+        }else {
+            alert('please insert valid id')
+        }
+        location.reload();
+    });
+
+    $("#getBtn").click(function (){
+        var id = $("#getid").val();
+        if (id) {
+            $.get("/item/" + id, function (data) {
+                console.log(data)
+                if (data === "500") {
+                    window.parent.location = "http://localhost:8080/login";
+                } else if (data === '404') {
+                    alert("item not found")
+
+                } else {
+                    var str = "Orange number " + data.id + ":\nsize: " + data.size+"\nprice: "
+                            + data.price+"\nelse: "+ data.data;
+                    alert(str)
+                }
+            });
+        }else {
+            alert('please insert valid id')
+        }
+    });
+    $("#dltBtn").click(function () {
+        var id = $("#deleteid").val();
+        console.log("start deletion")
+        if (id){
+            deleteItem(id);
+        }else {
+            alert('please insert valid id')
+        }
+    });
+    $("#listBtn").click(function () {
+
+        $.get("/items/", function (data) {
+            if (data === "500"){
+                window.parent.location = "http://localhost:8080/login";
+            }else {
+                var tableChild = document.getElementById("itemTable");
+                var tablePar = document.getElementById("tableDiv");
+               tablePar.removeChild(tableChild);
+
+                var html = "<table border='1|1' id = 'itemTable'>";
+                html += "<tr>";
+                html += "<th>ID</th>";
+                html += "<th>SIZE</th>";
+                html += "<th>PRICE</th>";
+                html += "<th>OTHER</th>";
+
+                html += "</tr>";
+                for (var i = 0; i < data.length; i++) {
+
+                    if (data[i]) {
+                        html += "<tr>";
+                        html += "<td>" + data[i].id + "</td>";
+                        html += "<td>" + data[i].size + "</td>";
+                        html += "<td>" + data[i].price + "</td>";
+                        html += "<td>" + data[i].data + "</td>";
+
+                        html += "</tr>";
+                    }
+                }
+                html+="</table>";
+                console.log(html);
+                var table = document.createElement('table');
+                table.id = "itemTable";
+                table.cellSpacing = "10"
+                table.innerHTML = html;
+                table.color = "orange";
+                document.getElementById('tableDiv').appendChild(table);
+            }
+
+
+        });
+    });
+
+function deleteItem(id){
+        $.ajax({
+            url:"http://localhost:8080/item/"+id,
+            type: "DELETE",
+            success: function (){
+                alert('item deleted')
+            },
+            error: function (status){
+                if (status === 500){
+                    window.parent.location = "http://localhost:8080/login";
+                }else{
+                    alert("missing item")
+                }
+            }
+        });
+        location.reload();
+    }
+    function putItem(stringItem){
+        console.log(stringItem);
+        $.ajax({
+            url:"http://localhost:8080/item",
+            type: "PUT",
+            data: stringItem,
+            success: function (){
+                alert('item updated')
+            },
+            fail: function (status){
+                if (status === 500){
+                    window.parent.location = "http://localhost:8080/login";
+                }else{
+                    alert("missing item")
+                }
+            }
+        });
+        location.reload();
+    }
+</script>
+</html>
