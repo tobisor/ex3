@@ -67,6 +67,30 @@ app.get('/register/', function(req, res){
     res.sendFile(__dirname + '/public/register.html');
 });
 
+app.get('/DNA/', function(req, res){
+    res.sendFile(__dirname + '/public/toDNA.html');
+});
+
+app.post('/DNA/', function(req, res){
+    var text = req.body;
+    console.log(text)
+    if (text){
+        console.log("before converting to byteArray");
+        while (text.length % 3 != 0){
+            text = text + '0'
+        }
+        var byteArray = convertStringToByteArray(text);
+        console.log("this is byteArray: \n"+ byteArray);
+        console.log("this is byteArray size: "+ byteArray.length)
+        var DNAString = convertByteArrayToDNA(byteArray);
+        console.log("this is DNA string :\n" + DNAString )
+        console.log("this is DNA string size: "+ DNAString.length)
+        res.status(200).json({str: DNAString});
+    }else {
+        res.status(500).send("500");
+    }
+    });
+
 app.post("/register/:username/:password", function(req, res) {
     var username = req.params.username;
     var pass = req.params.password;
@@ -232,4 +256,52 @@ function verifyAccess(req) {
     }
 
    return verified;
+}
+
+function convertStringToByteArray(str){
+    {
+        var bytes = [];
+        //currently the function returns without BOM. Uncomment the next line to change that.
+        //bytes.push(254, 255);  //Big Endian Byte Order Marks
+        for (var i = 0; i < str.length; ++i)
+        {
+            var charCode = str.charCodeAt(i);
+            //char > 2 bytes is impossible since charCodeAt can only return 2 bytes
+            bytes.push((charCode & 0xFF00) >>> 8);  //high byte (might be 0)
+            bytes.push(charCode & 0xFF);  //low byte
+        }
+        return bytes;
+    }
+}
+
+function convertByteArrayToDNA(byteArray){
+    var codonArray = [];
+    for (var i = 0; i < byteArray.length ; i = i + 3 ){
+        console.log("i = :" + i + "\n and byte array= " + byteArray.length );
+        firstCodon = byteArray[i] & 0xFC;
+        firstCodon = firstCodon >>> 2;
+
+        secondCodon = byteArray[i] & 0x03;
+        secondCodon = secondCodon << 4;
+        temp = byteArray[i+1] & 0xF0;
+        temp = temp >>> 4;
+        secondCodon |= temp;
+
+        thirdCodon = byteArray[i+1] & 0x0F;
+        thirdCodon = thirdCodon << 2;
+        temp = byteArray[i+2] & 0xC0;
+        temp = temp >>> 6;
+        thirdCodon = thirdCodon | temp;
+
+        forthCodon = byteArray[i+2] & 0x3F;
+        console.log (firstCodon + " " + secondCodon + " " + thirdCodon+ " " + forthCodon);
+        codonArray.push(firstCodon);
+        codonArray.push(secondCodon);
+        codonArray.push(thirdCodon);
+        codonArray.push(forthCodon);
+
+        //now need to check if there are bytes left (0 1 ow 2 bytes)
+    }
+    return codonArray;
+
 }

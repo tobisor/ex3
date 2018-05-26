@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>ByteToDNAConverter</title>
+</head>
+<body>
+
+<textarea rows="30" cols="130"  id="txtToDNA">
+Enter text to convert to DNA
+</textarea>
+<br>
+<button class = button id="txtBtn">Translate</button>
+</body>
+
+<script>
+    $("#txtBtn").click(function () {
+        var text = $("#txtToDNA").val();
+        if(text) {
+            $.post('/DNA/', text, function (data) {
+                var status = data;
+
+                if (status === '500') {
+                    alert("invalid username or password")
+                } else {
+                    alert(data.str);
+                }
+            });
+        }else{
+            alert('please insert valid user name and password')
+        }
+    })
+</script>
+</html>
